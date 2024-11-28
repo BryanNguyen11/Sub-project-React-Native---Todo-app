@@ -199,10 +199,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   loginButton: {
-    backgroundColor: '#000',
+    backgroundColor: '#00A8E8',
     borderRadius: 10,
     marginTop: 40,
-    width: 200,
+    width: 260,
     maxWidth: '100%',
     paddingHorizontal: 43,
     paddingVertical: 10,

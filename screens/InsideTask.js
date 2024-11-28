@@ -199,8 +199,10 @@ const InsideTask = ({ route }) => {
               value={newTaskDueDate}
               onChangeText={setNewTaskDueDate}
             />
+            <View style={{flexDirection:'row',columnGap:20}}>
             <Button title="Save" onPress={handleSaveNewTask} />
             <Button title="Cancel" onPress={() => setModalVisible(false)} />
+            </View>
           </View>
         </View>
       </Modal>
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
     width: 300,
     padding: 20,
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius:10,
     alignItems: 'center',
   },
   modalTitle: {
@@ -365,7 +367,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 20,
+    borderRadius:10,
     marginBottom: 10,
   },
   dueDateText: {

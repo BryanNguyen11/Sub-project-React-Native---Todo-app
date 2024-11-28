@@ -232,8 +232,10 @@ const DashboardScreen = ({ navigation }) => {
               value={newTaskDueDate}
               onChangeText={setNewTaskDueDate}
             />
+            <View  style={{flexDirection:"row",columnGap:10}}> 
             <Button title="Save" onPress={handleSaveNewTask} />
             <Button title="Cancel" onPress={() => setModalVisible(false)} />
+            </View>
           </View>
         </View>
       </Modal>
@@ -408,17 +410,21 @@ const DashboardScreen = ({ navigation }) => {
       fontSize: 14,
       color: 'rgba(137, 137, 137, 1)',
     },
+
+    // Styles for Modal
     modalContainer: {
       flex: 1,
+      height: 300,
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
+    
     modalContent: {
       width: 300,
       padding: 20,
       backgroundColor: '#fff',
-      borderRadius: 20,
+      borderRadius: 10,
       alignItems: 'center',
     },
     modalTitle: {
@@ -431,7 +437,7 @@ const DashboardScreen = ({ navigation }) => {
       padding: 10,
       borderWidth: 1,
       borderColor: '#ccc',
-      borderRadius: 20,
+      borderRadius: 10,
       marginBottom: 10,
     },
   });
