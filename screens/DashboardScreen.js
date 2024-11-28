@@ -1,20 +1,10 @@
 import React, { useState } from 'react';
-import {
-  View,
-  ScrollView,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Platform,
-  AccessibilityInfo,
-  Modal,
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, Platform, AccessibilityInfo,Modal,
   TextInput,
-  Button,
-} from 'react-native';
+  Button, } from 'react-native';
 
 const DashboardScreen = ({ navigation }) => {
-  const [taskGroups, setTaskGroups] = useState([
+  const [taskGroups, setTaskGroups] = React.useState([
     {
       id: 1,
       title: "My Day",
@@ -34,21 +24,28 @@ const DashboardScreen = ({ navigation }) => {
       arrowIcon: "https://cdn.builder.io/api/v1/image/assets/TEMP/b72a09b04ffb7841c286fa914ec68b632873e11fcc2320a345eab09e592e1cc8?placeholderIfAbsent=true&apiKey=7a0469033215499bade6ced937091230"
     }
   ]);
-
+  const [showDelete, setShowDelete] = React.useState(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
 
   const handleTaskGroupPress = (id) => {
-    AccessibilityInfo.announceForAccessibility(`Opening ${taskGroups.find(group => group.id === id)?.title}`);
-    navigation.navigate('InsideTask', { title: taskGroups.find(group => group.id === id)?.title }); // Navigate to InsideTask screen with title
+    if (showDelete === id) {
+      setShowDelete(null);
+    } else {
+      setShowDelete(id);
+    }
   };
-  
+
+  const deleteTaskGroup = (id) => {
+    setTaskGroups(taskGroups.filter(group => group.id !== id));
+    setShowDelete(null);
+  };
 
   const handleAddNewList = () => {
     setModalVisible(true);
+    
   };
-
   const handleSaveNewTask = () => {
     if (newTaskTitle) {
       const newTask = {
@@ -122,7 +119,8 @@ const DashboardScreen = ({ navigation }) => {
           <TouchableOpacity 
             key={group.id}
             style={styles.taskGroup}
-            onPress={() => handleTaskGroupPress(group.id)}
+            onPress={() => navigation.navigate('InsideTask', { title: group.title })}
+            onLongPress={() => handleTaskGroupPress(group.id)}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel={`${group.title} task group`}
@@ -140,6 +138,16 @@ const DashboardScreen = ({ navigation }) => {
               source={{ uri: group.arrowIcon }}
               style={styles.arrowIcon}
             />
+            {showDelete === group.id && (
+              <TouchableOpacity 
+                style={styles.deleteButton} 
+                onPress={() => deleteTaskGroup(group.id)}
+                accessibilityRole="button"
+                accessibilityLabel="Delete task group"
+              >
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            )}
           </TouchableOpacity>
         ))}
 
@@ -183,31 +191,27 @@ const DashboardScreen = ({ navigation }) => {
               resizeMode="contain"
               source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/78192fbad29cb8b4e826005f3cb4756d498d0f54b939f7cb3a4482c5da34d4ca?placeholderIfAbsent=true&apiKey=7a0469033215499bade6ced937091230" }}
               style={styles.projectArrow}
+              />
+            </View>
+            <Text style={styles.projectSteps}>Steps 11/30</Text>
+            <Text style={styles.projectDate}>Due date: 20/12/2024</Text>
+            <Text style={styles.projectStatus}>Status: Running</Text>
+          </TouchableOpacity>
+  
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={handleAddNewProject}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Add new project"
+          >
+            <Image
+              resizeMode="contain"
+              source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/5490e6a9b94bce32406e0e5eac69867f8bdab81f30ea2be6ff0f6075aa1af5c8?placeholderIfAbsent=true&apiKey=7a0469033215499bade6ced937091230" }}
+              style={styles.addIcon}
             />
-          </View>
-          <Text style={styles.projectSteps}>Steps 11/30</Text>
-          <Text style={styles.projectDate}>Due date: 20/12/2024</Text>
-          <Text style={styles.projectStatus}>Status: Running</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={handleAddNewProject}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="Add new project"
-        >
-          <Image
-            resizeMode="contain"
-            source={{ uri: "https://cdn.builder.io/api/v1/image/assets/TEMP/5490e6a9b94bce32406e0e5eac69867f8bdab81f30ea2be6ff0f6075aa1af5c8?placeholderIfAbsent=true&apiKey=7a0469033215499bade6ced937091230" }}
-            style={styles.addIcon}
-          />
-          <Text style={styles.addText}>Add new project</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal for Adding New Task */}
-      <Modal
+            <Text style={styles.addText}>Add new project</Text>
+            <Modal
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
@@ -233,191 +237,204 @@ const DashboardScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    width: '100%',
-    paddingHorizontal: 14,
-    paddingTop: Platform.OS === 'ios' ? 65 : 45,
-    paddingBottom: 12,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  profileImage: {
-    width: 43,
-    height: 43,
-    borderRadius: 21.5,
-  },
-  nameContainer: {
-    justifyContent: 'center',
-  },
-  userName: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#000',
-  },
-  menuIcon: {
-    width: 30,
-    height: 30,
-  },
-  dateText: {
-    fontSize: 16,
-    marginTop: 14,
-    color: '#000',
-    fontWeight: '500',
-  },
-  content: {
-    padding: 15,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: 20,
-  },
-  section: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 13,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    color: 'rgba(137, 137, 137, 1)',
-    fontWeight: '700',
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(137, 137, 137, 1)',
-  },
-  taskGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 10,
-    marginVertical: 4,
-    backgroundColor: '#f5f5f5',
-  },
-  taskGroupContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  taskIcon: {
-    width: 24,
-    height: 24,
-  },
-  taskGroupTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  arrowIcon: {
-    width: 20,
-    height: 20,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    padding: 13,
-    borderRadius: 10,
-    marginVertical: 8,
-    backgroundColor: '#e0e0e0',
-  },
-  addIcon: {
-    width: 24,
-    height: 24,
-  },
-  addText: {
-    fontSize: 16,
-    flex: 1,
-  },
-  projectCard: {
-    borderRadius: 10,
-    padding: 13,
-    marginVertical: 8,
-    backgroundColor: '#f5f5f5',
-  },
-  projectHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  projectTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  projectIcon: {
-    width: 24,
-    height: 24,
-  },
-  projectTitle: {
-    fontSize: 24,
-    fontWeight: '500',
-  },
-  projectArrow: {
-    width: 20,
-    height: 20,
-  },
-  projectSteps: {
-    marginTop: 22,
-    fontSize: 14,
-  },
-  projectDate: {
-    marginTop: 5,
-    fontSize: 14,
-    color: 'rgba(137, 137, 137, 1)',
-  },
-  projectStatus: {
-    marginTop: 5,
-    fontSize: 14,
-    color: 'rgba(137, 137, 137, 1)',
-  },
-  // Styles for Modal
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  modalInput: {
-    width: '100%',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
-    marginBottom: 10,
-  },
-});
-
-export default DashboardScreen;
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  };
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    header: {
+      width: '100%',
+      paddingHorizontal: 14,
+      paddingTop: Platform.OS === 'ios' ? 65 : 45,
+      paddingBottom: 12,
+    },
+    profileSection: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    userInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+    },
+    profileImage: {
+      width: 43,
+      height: 43,
+      borderRadius: 21.5,
+    },
+    nameContainer: {
+      justifyContent: 'center',
+    },
+    userName: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: '#000',
+    },
+    menuIcon: {
+      width: 30,
+      height: 30,
+    },
+    dateText: {
+      fontSize: 16,
+      marginTop: 14,
+      color: '#000',
+      fontWeight: '500',
+    },
+    content: {
+      padding: 15,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: '700',
+      marginBottom: 20,
+    },
+    section: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 13,
+      marginTop: 20,
+      marginBottom: 10,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      color: 'rgba(137, 137, 137, 1)',
+      fontWeight: '700',
+    },
+    divider: {
+      flex: 1,
+      height: 1,
+      backgroundColor: 'rgba(137, 137, 137, 1)',
+    },
+    taskGroup: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 14,
+      borderRadius: 10,
+      marginVertical: 4,
+      backgroundColor: '#f5f5f5',
+    },
+    taskGroupContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    taskIcon: {
+      width: 24,
+      height: 24,
+    },
+    taskGroupTitle: {
+      fontSize: 16,
+      fontWeight: '500',
+    },
+    arrowIcon: {
+      width: 20,
+      height: 20,
+    },
+    deleteButton: {
+      position: 'absolute',
+      right: 10,
+      backgroundColor: 'red',
+      padding: 5,
+      borderRadius: 5,
+    },
+    deleteButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    addButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+      padding: 13,
+      borderRadius: 10,
+      marginVertical: 8,
+      backgroundColor: '#e0e0e0',
+    },
+    addIcon: {
+      width: 24,
+      height: 24,
+    },
+    addText: {
+      fontSize: 16,
+      flex: 1,
+    },
+    projectCard: {
+      borderRadius: 10,
+      padding: 13,
+      marginVertical: 8,
+      backgroundColor: '#f5f5f5',
+    },
+    projectHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    projectTitleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    projectIcon: {
+      width: 24,
+      height: 24,
+    },
+    projectTitle: {
+      fontSize: 24,
+      fontWeight: '500',
+    },
+    projectArrow: {
+      width: 20,
+      height: 20,
+    },
+    projectSteps: {
+      marginTop: 22,
+      fontSize: 14,
+    },
+    projectDate: {
+      marginTop: 5,
+      fontSize: 14,
+      color: 'rgba(137, 137, 137, 1)',
+    },
+    projectStatus: {
+      marginTop: 5,
+      fontSize: 14,
+      color: 'rgba(137, 137, 137, 1)',
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      width: 300,
+      padding: 20,
+      backgroundColor: '#fff',
+      borderRadius: 20,
+      alignItems: 'center',
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    modalInput: {
+      width: '100%',
+      padding: 10,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 20,
+      marginBottom: 10,
+    },
+  });
+  
+  export default DashboardScreen;
+  
