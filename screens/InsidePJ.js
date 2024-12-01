@@ -35,17 +35,29 @@ const InsidePJ = () => {
   const animations = React.useRef(tasks.map(() => new Animated.Value(1))).current;
   const [isModalVisible, setModalVisible] = React.useState(false);
 
-  const toggleTaskCompletion = (taskId) => {
+  const toggleTaskCompletion = (taskId, complete = true) => {
     const index = tasks.findIndex(task => task.id === taskId);
     if (index === -1) return;
 
-    Animated.timing(animations[index], {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setTasks(tasks.filter(task => task.id !== taskId));
-    });
+    if (complete) {
+      Animated.timing(animations[index], {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setTasks(tasks.filter(task => task.id !== taskId));
+      });
+    } else {
+      setTasks(tasks.map(task => task.id === taskId ? {...task, status: 'Ejected'} : task));
+    }
+  };
+
+  const handleApproveTask = (taskId) => {
+    toggleTaskCompletion(taskId);
+  };
+
+  const handleEjectTask = (taskId) => {
+    toggleTaskCompletion(taskId, false);
   };
 
   const handleAddNewTask = () => {
@@ -53,7 +65,15 @@ const InsidePJ = () => {
   };
 
   const handleSaveNewTask = (taskData) => {
-    setTasks([...tasks, { ...taskData, id: Date.now().toString(), completed: false,assignee: taskData.assignTo }]);
+    setTasks([...tasks, { 
+      ...taskData, 
+      id: Date.now().toString(), 
+      completed: false,
+      assignee: taskData.assignTo ,
+      status: 'Pending', 
+      step: 0,
+      totalSteps: 10
+    }]);
     setModalVisible(false);
   };
 
@@ -95,6 +115,7 @@ const InsidePJ = () => {
             <View style={styles.actionButtons}>
               <TouchableOpacity 
                 style={styles.actionButton}
+                onPress={() => handleEjectTask(task.id)}
                 accessibilityRole="button"
                 accessibilityLabel="Eject task"
               >
@@ -102,6 +123,7 @@ const InsidePJ = () => {
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.actionButton}
+                onPress={() => handleApproveTask(task.id)}
                 accessibilityRole="button"
                 accessibilityLabel="Approve task"
               >
@@ -145,7 +167,7 @@ const InsidePJ = () => {
           style={styles.headerIcon}
           accessibilityLabel="Todo app icon"
         />
-        <Text style={styles.headerText}>Todo App</Text>
+                <Text style={styles.headerText}>Todo App</Text>
       </View>
 
       <View style={styles.descriptionSection}>
