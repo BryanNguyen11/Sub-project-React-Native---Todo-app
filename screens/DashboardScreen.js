@@ -36,6 +36,11 @@ const DashboardScreen = ({ navigation }) => {
       setShowDelete(id);
     }
   };
+  const handleProjectsPress = () => {
+    AccessibilityInfo.announceForAccessibility('Opening Todo App project details');
+    navigation.navigate('InsidePJ'); // Điều hướng đến InsidePJ
+  };
+  
 
   const deleteTaskGroup = (id) => {
     setTaskGroups(taskGroups.filter(group => group.id !== id));
@@ -173,7 +178,7 @@ const DashboardScreen = ({ navigation }) => {
 
         <TouchableOpacity 
           style={styles.projectCard}
-          onPress={handleProjectPress}
+          onPress={handleProjectsPress}
           accessible={true}
           accessibilityRole="button"
           accessibilityLabel="Todo App project"
