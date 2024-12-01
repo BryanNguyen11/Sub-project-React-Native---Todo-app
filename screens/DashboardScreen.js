@@ -70,7 +70,7 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   const handleAddNewProject = () => {
-    AccessibilityInfo.announceForAccessibility('Opening add new project form');
+    setModalVisible(true);
   };
 
   const handleProjectPress = () => {

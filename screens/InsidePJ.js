@@ -7,9 +7,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   AccessibilityInfo,
+  Animated,
+  Modal,
 } from "react-native";
+import TaskPJForm from "./TaskPJForm"; // Đảm bảo đường dẫn chính xác
 
-const InsidePJ = ({ route }) => {
+const InsidePJ = () => {
   const [tasks, setTasks] = React.useState([
     {
       id: '1',
@@ -29,11 +32,29 @@ const InsidePJ = ({ route }) => {
       completed: false
     }
   ]);
+  const animations = React.useRef(tasks.map(() => new Animated.Value(1))).current;
+  const [isModalVisible, setModalVisible] = React.useState(false);
 
   const toggleTaskCompletion = (taskId) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? {...task, completed: !task.completed} : task
-    ));
+    const index = tasks.findIndex(task => task.id === taskId);
+    if (index === -1) return;
+
+    Animated.timing(animations[index], {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setTasks(tasks.filter(task => task.id !== taskId));
+    });
+  };
+
+  const handleAddNewTask = () => {
+    setModalVisible(true);
+  };
+
+  const handleSaveNewTask = (taskData) => {
+    setTasks([...tasks, { ...taskData, id: Date.now().toString(), completed: false,assignee: taskData.assignTo }]);
+    setModalVisible(false);
   };
 
   const TaskCheckbox = ({ taskId, completed }) => (
@@ -46,50 +67,53 @@ const InsidePJ = ({ route }) => {
     />
   );
 
-  const TaskCard = ({ task }) => (
-    <View style={styles.taskCardContainer}>
-      <View style={styles.taskHeader}>
-        <View style={styles.taskInfo}>
-          <TaskCheckbox taskId={task.id} completed={task.completed} />
-          <Text style={styles.taskTitle} accessibilityRole="header">
-            {task.title}
-          </Text>
-          <Text style={styles.dueDate}>Due date: {task.dueDate}</Text>
+  const TaskCard = ({ task, index }) => (
+    <Animated.View style={{ transform: [{ scale: animations[index] }] }}>
+      <View style={styles.taskCardContainer}>
+        <View style={styles.taskHeader}>
+          <View style={styles.taskInfo}>
+            <TaskCheckbox taskId={task.id} completed={task.completed} />
+            <Text style={styles.taskTitle} accessibilityRole="header">
+              {task.title}
+            </Text>
+            <Text style={styles.dueDate}>Due date: {task.dueDate}</Text>
+          </View>
+          {task.assignee && (
+            <View style={styles.assigneeContainer}>
+              <Text style={styles.assigneeText}>{task.assignee}</Text>
+            </View>
+          )}
         </View>
-        {task.assignee && (
-          <View style={styles.assigneeContainer}>
-            <Text style={styles.assigneeText}>{task.assignee}</Text>
+        {task.status && (
+          <View style={styles.taskStatus}>
+            <View style={styles.statusInfo}>
+              <Text>Status: {task.status}</Text>
+              <Text style={styles.stepText}>
+                Step: {task.step} of {task.totalSteps}
+              </Text>
+            </View>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                accessibilityRole="button"
+                accessibilityLabel="Eject task"
+              >
+                <Text style={styles.buttonText}>Ejected</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                accessibilityRole="button"
+                accessibilityLabel="Approve task"
+              >
+                <Text style={styles.buttonText}>Approve</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </View>
-      {task.status && (
-        <View style={styles.taskStatus}>
-          <View style={styles.statusInfo}>
-            <Text>Status: {task.status}</Text>
-            <Text style={styles.stepText}>
-              Step: {task.step} of {task.totalSteps}
-            </Text>
-          </View>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity 
-              style={styles.actionButton_ejected}
-              accessibilityRole="button"
-              accessibilityLabel="Eject task"
-            >
-              <Text style={styles.buttonText}>Ejected</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton_approve}
-              accessibilityRole="button"
-              accessibilityLabel="Approve task"
-            >
-              <Text style={styles.buttonText}>Approve</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-    </View>
+    </Animated.View>
   );
+  
 
   return (
     <ScrollView 
@@ -137,7 +161,7 @@ const InsidePJ = ({ route }) => {
         </Text>
       </View>
 
-      {tasks.map((task) => (
+      {tasks.map((task, index) => (
         <React.Fragment key={task.id}>
           <View style={styles.sectionContainer}>
             <Text style={[
@@ -148,12 +172,13 @@ const InsidePJ = ({ route }) => {
             </Text>
             <View style={styles.divider} />
           </View>
-          <TaskCard task={task} />
+          <TaskCard task={task} index={index} />
         </React.Fragment>
       ))}
 
       <TouchableOpacity 
         style={styles.addTaskButton}
+        onPress={handleAddNewTask}
         accessibilityRole="button"
         accessibilityLabel="Add new task"
       >
@@ -172,9 +197,25 @@ const InsidePJ = ({ route }) => {
       >
         <Text style={styles.autoPlanText}>Auto Plan</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TaskPJForm
+              onSave={handleSaveNewTask}
+              onCancel={() => setModalVisible(false)}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -284,7 +325,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   assigneeContainer: {
-    backgroundColor: '#EFCA64',
+    backgroundColor: '#e0e0e0',
     borderRadius: 10,
     padding: 5,
     paddingHorizontal: 10,
@@ -309,14 +350,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  actionButton_approve: {
-    backgroundColor: '#17A959',
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-  },
-  actionButton_ejected: {
-    backgroundColor: '#E52528',
+  actionButton: {
+    backgroundColor: '#007AFF',
     borderRadius: 5,
     paddingVertical: 5,
     paddingHorizontal: 15,
@@ -353,6 +388,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 26,
     fontWeight: '700',
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    alignItems: 'center',
   },
 });
 
