@@ -244,6 +244,7 @@ const DashboardScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      
           </TouchableOpacity>
         </View>
       </ScrollView>

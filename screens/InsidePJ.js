@@ -30,7 +30,17 @@ const InsidePJ = () => {
       step: 9,
       totalSteps: 11,
       completed: false
-    }
+    },
+    {
+        id: '3',
+        title: "Design BE",
+        dueDate: "20/11/2024",
+        assignee: "Huy Hoang",
+        status: "Commit",
+        step: 9,
+        totalSteps: 11,
+        completed: false
+      }
   ]);
   const animations = React.useRef(tasks.map(() => new Animated.Value(1))).current;
   const [isModalVisible, setModalVisible] = React.useState(false);
@@ -38,7 +48,7 @@ const InsidePJ = () => {
   const toggleTaskCompletion = (taskId, complete = true) => {
     const index = tasks.findIndex(task => task.id === taskId);
     if (index === -1) return;
-
+  
     if (complete) {
       Animated.timing(animations[index], {
         toValue: 0,
@@ -51,6 +61,7 @@ const InsidePJ = () => {
       setTasks(tasks.map(task => task.id === taskId ? {...task, status: 'Ejected'} : task));
     }
   };
+  
 
   const handleApproveTask = (taskId) => {
     toggleTaskCompletion(taskId);
@@ -135,6 +146,7 @@ const InsidePJ = () => {
       </View>
     </Animated.View>
   );
+  
   
 
   return (
